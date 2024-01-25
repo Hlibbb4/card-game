@@ -1,0 +1,23 @@
+.card { 
+    width: 125px; 
+    height: 182px; 
+    animation: trans_form 0.5s forwards;  
+} 
+ 
+@keyframes trans_form { 
+    0% {transform: translateX(-1000px);} 
+    100% {transform: translateX(0);} 
+}
+
+.table {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: green;
+    border: solid 5px grey;
+    border-radius: 5px;
+    padding: 20px;
+    margin: 20px;
+    width: 800px;
+    height: 500px;
+}

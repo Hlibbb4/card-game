@@ -1,0 +1,198 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cards</title>
+    <link rel="stylesheet" href="cards.css">
+</head>
+<body>
+    <button id="stay">stay</button>
+    <button id="drawButton">Draw</button><br>
+    <h1 id="score">Score: 0</h1>
+    <h1 id="dealer_score">Dealer: 0</h1>
+    <h2 id="feedback"></h2>
+    <button id="resetButton">New Game</button>
+    <h1 id="money">Money: $100</h1>
+
+    <div class="table">
+        <div id="card_container"></div>
+        <div id="dealer"></div>
+        
+    </div>
+    <img id="card" src="" alt="No card" width="250" height="363">
+ 
+    <script>
+        var suits = ['hearts', 'diamonds', 'clubs', 'spades'];
+        var ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'jack', 'queen', 'king', 'ace'];
+        var deck = [];
+        var hand_count = 0
+        var player_score = 0
+        var dealer_score = 0
+ 
+        var stayButton = document.getElementById('stay');
+        var drawbutton = document.getElementById('drawButton')
+        var card_EL = document.getElementById('card')
+        var container = document.getElementById('card_container')
+        var dealer_container = document.getElementById('dealer')
+        var score_EL = document.getElementById('score')
+        var Dealer_EL = document.getElementById('dealer_score')
+        var feedback_EL = document.getElementById('feedback')
+        var resetButton = document.getElementById('resetButton');
+        var player_money = parseInt(localStorage.getItem('player_money')) || 100;
+
+        function initializeDeck() { 
+            deck = []; 
+            for (let suit of suits) { 
+                for (let rank of ranks) {
+                    
+                    deck.push( {rank: rank, image: `${rank}_of_${suit}.png`})
+
+                }
+            }
+        }
+ 
+        function drawCard() {
+            if (deck.length === 0) {
+                alert("No more cards in the deck!");
+                return;
+            }
+            if (dealer_score >21){
+                return;
+            }
+
+            hand_count++; 
+            var randomIndex = Math.floor(Math.random() * deck.length); 
+            var card = deck.splice(randomIndex, 1)[0]; 
+
+            var new_card = document.createElement("img") 
+
+            new_card.src = `cards/${card.image}`;
+            new_card.classList.add('card')
+            container.appendChild(new_card)
+
+            console.log("rank of card:", card.rank)
+
+            value_of_card = getCardValue(card.rank)
+            player_score += value_of_card
+
+            console.log(player_score)
+
+            score_EL.innerHTML = "Score: " + player_score 
+            
+            checkhand()
+            if (dealer_score < 21){
+                setTimeout(dealerDrawCard, 1500);
+            }
+
+             
+
+        }
+        function dealerDrawCard() {
+            if (deck.length === 0) {
+                alert("No more cards in the deck, or max amount of cards on hand!");
+                return;
+            }
+
+            hand_count++; 
+            var randomIndex = Math.floor(Math.random() * deck.length); 
+            var card = deck.splice(randomIndex, 1)[0]; 
+
+            var new_card = document.createElement("img") 
+
+            new_card.src = 'cards/' + card.image;
+            new_card.classList.add('card')
+            dealer_container.appendChild(new_card)
+
+            console.log("rank of card:", card.rank)
+
+            value_of_card = getCardValue(card.rank)
+            dealer_score += value_of_card
+
+            console.log(dealer_score)
+
+            Dealer_EL.innerHTML = "Dealer: " + dealer_score;
+            
+            checkhand();
+        }
+        
+
+        function getCardValue(rank){
+            if (['jack', 'queen', 'king'].includes(rank)) {
+                return 10;
+            } else if (rank == "ace") {
+                return 11; 
+            } else {
+                return parseInt(rank) 
+            }
+        }
+
+        function updateMoneyDisplay() {
+            money_EL.textContent = "Money: $" + player_money;
+            localStorage.setItem('player_money', player_money);
+        }
+
+        function checkhand() {
+            if (dealer_score == 21 && player_score < 21) {
+                feedback_EL.innerHTML = "Dealer got 21, you lose.";
+                player_money -= 10;
+                updateMoneyDisplay();
+            } else if (dealer_score > 21) {
+                feedback_EL.innerHTML = "Dealer busted, you win.";
+                player_money += 10;
+                updateMoneyDisplay();
+            } else if (player_score > 21) {
+                feedback_EL.innerHTML = "You lose.";
+                player_money -= 10;
+                updateMoneyDisplay();
+            } else if (player_score == 21) {
+                feedback_EL.innerHTML = "You got 21!";
+                player_money += 10;
+                updateMoneyDisplay();
+                endPlayerTurn();
+            }
+        }
+
+        stayButton.addEventListener('click', endPlayerTurn);
+
+        function endPlayerTurn() {
+            if (dealer_score < 17) {
+                dealerDrawCard();
+            } else {
+                determineWinner();
+            }
+        }
+
+
+
+
+        resetButton.addEventListener('click', resetGame);
+
+        function resetGame() {
+            container.innerHTML = '';
+            dealer_container.innerHTML = '';
+
+            hand_count = 0;
+            player_score = 0;
+            dealer_score = 0;
+
+            feedback_EL.innerHTML = '';
+
+            initializeDeck();
+
+            score_EL.innerHTML = "Score: 0";
+            Dealer_EL.innerHTML = "Dealer: 0";
+
+            updateMoneyDisplay();
+
+        }
+
+        drawbutton.addEventListener('click', drawCard);
+ 
+       
+        initializeDeck(); 
+
+        console.log(deck)
+ 
+    </script>
+</body>
+</html>
