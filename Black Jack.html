@@ -12,7 +12,7 @@
     <h1 id="dealer_score">Dealer: 0</h1>
     <h2 id="feedback"></h2>
     <button id="resetButton">New Game</button>
-    <h1 id="money">Money: $100</h1>
+    <p id="money_display">Money: $100</p>
 
     <div class="table">
         <div id="card_container"></div>
@@ -38,7 +38,9 @@
         var Dealer_EL = document.getElementById('dealer_score')
         var feedback_EL = document.getElementById('feedback')
         var resetButton = document.getElementById('resetButton');
-        var player_money = parseInt(localStorage.getItem('player_money')) || 100;
+        var money_display = document.getElementById('money_display');
+        var gameOver = false;
+        var player_money = 100;
 
         function initializeDeck() { 
             deck = []; 
@@ -52,11 +54,20 @@
         }
  
         function drawCard() {
+            if (gameOver || dealer_score >= 21) {
+                return;
+            }   
+
             if (deck.length === 0) {
                 alert("No more cards in the deck!");
                 return;
             }
             if (dealer_score >21){
+                return;
+            }
+
+            if (player_score >= 21) {
+
                 return;
             }
 
@@ -80,7 +91,7 @@
             score_EL.innerHTML = "Score: " + player_score 
             
             checkhand()
-            if (dealer_score < 21){
+            if (dealer_score < 19){
                 setTimeout(dealerDrawCard, 1500);
             }
 
@@ -116,6 +127,16 @@
             checkhand();
         }
         
+        function endPlayerTurn() {
+            if (gameOver) return; 
+
+            if (dealer_score < 17) {
+                dealerDrawCard();
+            } else {
+                determineWinner(); 
+            }
+            gameOver = true;
+        }
 
         function getCardValue(rank){
             if (['jack', 'queen', 'king'].includes(rank)) {
@@ -128,7 +149,7 @@
         }
 
         function updateMoneyDisplay() {
-            money_EL.textContent = "Money: $" + player_money;
+            money_display.textContent = "Money: $" + player_money;
             localStorage.setItem('player_money', player_money);
         }
 
@@ -156,11 +177,16 @@
         stayButton.addEventListener('click', endPlayerTurn);
 
         function endPlayerTurn() {
-            if (dealer_score < 17) {
+            if (dealer_score < 19) {
                 dealerDrawCard();
             } else {
                 determineWinner();
             }
+
+            if (player_score <= dealer_score && dealer_score <= 21) {
+                feedback_EL.innerHTML = "Dealer wins.";
+                player_money -= 10;
+                updateMoneyDisplay();
         }
 
 
@@ -182,14 +208,14 @@
 
             score_EL.innerHTML = "Score: 0";
             Dealer_EL.innerHTML = "Dealer: 0";
-
+            
             updateMoneyDisplay();
 
+            gameOver = false;
         }
 
         drawbutton.addEventListener('click', drawCard);
- 
-       
+
         initializeDeck(); 
 
         console.log(deck)
